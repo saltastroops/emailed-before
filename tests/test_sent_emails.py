@@ -1,25 +1,25 @@
 import pytest
 import sqlite3
 from datetime import datetime
-from mailedbefore import SentMails
+from emailedbefore import SentEmails
 from pathlib import Path
 
 
 def _fetch_rows(sqlite_file: Path):
     connection = sqlite3.connect(sqlite_file, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
     cursor = connection.cursor()
-    cursor.execute('SELECT address, topic, sent_at as "s [timestamp]" FROM sent_mails')
+    cursor.execute('SELECT address, topic, sent_at as "s [timestamp]" FROM sent_emails')
     return cursor.fetchall()
 
 
-def test_register_sent_mail(database_file: Path):
-    sent_mails = SentMails(database_file)
+def test_register_sent_email(database_file: Path):
+    sent_emails = SentEmails(database_file)
 
     address ='test@example.com'
     topic = 'Pay invoice 123'
     sent_at = datetime(2020, 9, 15, 12, 55, 17, 0)
 
-    sent_mails.register(address=address, topic=topic, sent_at=sent_at)
+    sent_emails.register(address=address, topic=topic, sent_at=sent_at)
 
     rows = _fetch_rows(database_file)
     assert len(rows) == 1
@@ -27,22 +27,22 @@ def test_register_sent_mail(database_file: Path):
 
 
 def test_an_empty_list_is_returned_if_database_is_empty(database_file: Path):
-    sm = SentMails(database_file)
+    sm = SentEmails(database_file)
 
     ts = sm.sent_at("someone@somewhere.com", "Something")
     assert len(list(ts)) == 0
 
 
-def test_an_empty_list_is_returned_if_no_mail_has_been_sent_for_address(database_file: Path):
-    sm = SentMails(database_file)
+def test_an_empty_list_is_returned_if_no_email_has_been_sent_for_address(database_file: Path):
+    sm = SentEmails(database_file)
     sm.register("someone@somewhere.com", "Something", datetime(2020, 1, 1, 0, 0, 0, 0))
 
     ts = sm.sent_at("someone-else@somewhere.com", "Something")
     assert len(list(ts)) == 0
 
 
-def test_an_empty_list_is_returned_if_no_mail_has_been_sent_for_topic(database_file: Path):
-    sm = SentMails(database_file)
+def test_an_empty_list_is_returned_if_no_email_has_been_sent_for_topic(database_file: Path):
+    sm = SentEmails(database_file)
     sm.register("someone@somewhere.com", "Something", datetime(2020, 1, 1, 0, 0, 0, 0))
 
     ts = sm.sent_at("someone@somewhere.com", "Something else")
@@ -50,7 +50,7 @@ def test_an_empty_list_is_returned_if_no_mail_has_been_sent_for_topic(database_f
 
 
 def test_only_the_requested_address_and_topic_are_considered(database_file: Path):
-    sm = SentMails(database_file)
+    sm = SentEmails(database_file)
 
     data = [
     {'address': 'someone@somewhere.com', 'topic': 'Something', 'sent_at': datetime(2020, 9, 15, 17, 0, 0)},
@@ -69,7 +69,7 @@ def test_only_the_requested_address_and_topic_are_considered(database_file: Path
 
 
 def test_the_same_datetime_can_occur_more_than_once(database_file):
-    sm = SentMails(database_file)
+    sm = SentEmails(database_file)
 
     sm.register(address='someone@somewhere.com', topic='Something', sent_at=datetime(2020, 7, 31, 9, 14, 8))
     sm.register(address='someone@somewhere.com', topic='Something', sent_at=datetime(2020, 7, 31, 9, 14, 8))
@@ -79,8 +79,8 @@ def test_the_same_datetime_can_occur_more_than_once(database_file):
     assert len(list(ts)) == 3
 
 
-def test_sent_mails_are_returned_ordered_by_datetime(database_file: Path):
-    sm = SentMails(database_file)
+def test_sent_emails_are_returned_ordered_by_datetime(database_file: Path):
+    sm = SentEmails(database_file)
 
     ordered_times = [
         datetime(2019, 7, 5, 12, 0, 0, 0),
@@ -104,14 +104,14 @@ def test_sent_mails_are_returned_ordered_by_datetime(database_file: Path):
 
 
 def test_last_sent_at_returns_none_if_never_sent(database_file: Path):
-    sm = SentMails(database_file)
+    sm = SentEmails(database_file)
 
     t = sm.last_sent_at(address="someone@somewhere.comn", topic="Something")
     assert t is None
 
 
 def test_last_sent_at_returns_datetime_when_last_sent(database_file: Path):
-    sm = SentMails(database_file)
+    sm = SentEmails(database_file)
 
     data = [
         {'address': "someone@somewhere.com", 'topic': "Something", 'sent_at': datetime(2020, 4, 6, 0, 0, 0)},
@@ -126,10 +126,10 @@ def test_last_sent_at_returns_datetime_when_last_sent(database_file: Path):
     assert t == data[1]['sent_at']
 
 def test_database_table_is_not_recreated(database_file: Path):
-    sm = SentMails(database_file)
+    sm = SentEmails(database_file)
     sm.register(address="someone@somewhere.comn", topic="Something", sent_at=datetime(2019, 5, 3, 23, 45, 56))
 
-    sm2 = SentMails(database_file)
+    sm2 = SentEmails(database_file)
 
     ts = sm2.sent_at(address="someone@somewhere.comn", topic="Something")
     assert len(list(ts)) == 1

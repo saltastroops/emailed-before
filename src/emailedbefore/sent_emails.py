@@ -4,9 +4,9 @@ from datetime import datetime
 from typing import List, Optional, Union
 
 
-class SentMails:
+class SentEmails:
     """
-    A class for registering sent mails and querying when mails have been sent.
+    A class for registering sent emails and querying when emails have been sent.
 
     The information is stored in a Sqlite3 database, whose file must be passed to the
     constructor. The required table in that database is created automatically.
@@ -27,7 +27,7 @@ class SentMails:
 
     def register(self, address: str, topic: str, sent_at: datetime):
         """
-        Register the fact that a mail about a topic has been sent to an address at a
+        Register the fact that a email about a topic has been sent to an address at a
         given datetime.
 
         Parameters
@@ -42,7 +42,7 @@ class SentMails:
         """
 
         sql = """\
-INSERT INTO sent_mails (address, topic, sent_at)
+INSERT INTO sent_emails (address, topic, sent_at)
        VALUES (?, ?, ?)
         """
         with self.connection:
@@ -71,7 +71,7 @@ INSERT INTO sent_mails (address, topic, sent_at)
 
         sql = """\
 SELECT sent_at AS "s [timestamp]"
-FROM sent_mails
+FROM sent_emails
 WHERE address=? AND topic=?
 ORDER BY sent_at
 """
@@ -106,7 +106,7 @@ ORDER BY sent_at
 
     def _create_table(self):
         sql = """\
-CREATE TABLE IF NOT EXISTS sent_mails (
+CREATE TABLE IF NOT EXISTS sent_emails (
   address TEXT NOT NULL,
   topic TEXT NOT NULL,
   sent_at TEXT NOT NULL
@@ -118,21 +118,21 @@ CREATE TABLE IF NOT EXISTS sent_mails (
 
     def _create_address_index(self):
         sql = """\
-CREATE INDEX IF NOT EXISTS idx_address ON sent_mails (address)
+CREATE INDEX IF NOT EXISTS idx_address ON sent_emails (address)
         """
         with self.connection:
             self.connection.execute(sql)
 
     def _create_topic_index(self):
         sql = """\
-CREATE INDEX IF NOT EXISTS idx_topic ON sent_mails (topic)
+CREATE INDEX IF NOT EXISTS idx_topic ON sent_emails (topic)
         """
         with self.connection:
             self.connection.execute(sql)
 
     def _create_sent_at_index(self):
         sql = """\
-CREATE INDEX IF NOT EXISTS idx_sent_at ON sent_mails (sent_at)
+CREATE INDEX IF NOT EXISTS idx_sent_at ON sent_emails (sent_at)
         """
         with self.connection:
             self.connection.execute(sql)

@@ -1,4 +1,4 @@
-= Mailed Before
+= Emailed Before
 
 A simple Python library for keeping track when emails about some topics were sent.
 
@@ -8,18 +8,18 @@ You can install the library from PyPI.
 
 [source,shell script]
 ----
-pip install mailed-before
+pip install emailed-before
 ----
 
 == Usage
 
-First construct a `SentMails` instance:
+First construct a `SentEmails` instance:
 
 [source,python]
 ----
-from mailedbefore import SentMails
+from emailedbefore import SentEmails
 
-sent_mails = SentMails(sqlite_file)
+sent_mails = SentEmails(sqlite_file)
 ----
 
 `sqlite_file` is the path to a Sqlite3 file. It will be created if it doesn't exist yet.
