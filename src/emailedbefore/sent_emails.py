@@ -19,7 +19,9 @@ class SentEmails:
     """
 
     def __init__(self, sqlite_file: Union[str, os.PathLike]):
-        self.connection = sqlite3.connect(sqlite_file, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
+        self.connection = sqlite3.connect(
+            sqlite_file, detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES
+        )
         self._create_table()
         self._create_address_index()
         self._create_topic_index()
