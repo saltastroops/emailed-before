@@ -1,6 +1,7 @@
 import os
 import sqlite3
-from typing import Union
+from datetime import datetime
+from typing import List, Optional, Union
 
 
 class SentMails:
@@ -13,20 +14,99 @@ class SentMails:
     Parameters
     ----------
     sqlite_file : path-like object
-        The file containing the Sqlite3 database. This may be ":memory:" if you require
-        a database in RAM instead of on disk, for example in unit tests.
+        The file containing the Sqlite3 database.
 
     """
+
     def __init__(self, sqlite_file: Union[str, os.PathLike]):
-        self.connection = sqlite3.connect(sqlite_file)
+        self.connection = sqlite3.connect(sqlite_file, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
         self._create_table()
         self._create_address_index()
         self._create_topic_index()
         self._create_sent_at_index()
 
+    def register(self, address: str, topic: str, sent_at: datetime):
+        """
+        Register the fact that a mail about a topic has been sent to an address at a
+        given datetime.
+
+        Parameters
+        ----------
+        address : str
+            Email address.
+        topic : str
+            Topic.
+        sent_at : datetime
+            Datetime when the email was sent.
+
+        """
+
+        sql = """\
+INSERT INTO sent_mails (address, topic, sent_at)
+       VALUES (?, ?, ?)
+        """
+        with self.connection:
+            params = (address, topic, sent_at)
+            self.connection.execute(sql, params)
+
+    def sent_at(self, address: str, topic: str) -> List[datetime]:
+        """
+        The datetimes when an email about a topic has been sent to an address.
+
+        The list of datetimes is returned in ascending order.
+
+        Parameters
+        ----------
+        address : str
+            Email address.
+        topic : str
+            Topic.
+
+        Returns
+        -------
+        list
+            Datetimes when an email was sent.
+
+        """
+
+        sql = """\
+SELECT sent_at AS "s [timestamp]"
+FROM sent_mails
+WHERE address=? AND topic=?
+ORDER BY sent_at
+"""
+        cursor = self.connection.cursor()
+        cursor.execute(sql, (address, topic))
+        return [row[0] for row in cursor.fetchall()]
+
+    def last_sent_at(self, address: str, topic: str) -> Optional[datetime]:
+        """
+        The datetime when an emil about a topic was sent to an address.
+
+        None is returned if no such email has ever been sent.
+
+        Parameters
+        ----------
+        address : str
+            Email address.
+        topic : str
+            Topic.
+
+        Returns
+        -------
+        datetime
+            The datetime when an email was last sent.
+
+        """
+
+        sent_at = list(self.sent_at(address=address, topic=topic))
+        if len(sent_at) == 0:
+            return None
+        return sent_at[-1]
+
     def _create_table(self):
         sql = """\
-CREATE TABLE IF NOT EXISTS sent_emails (
+CREATE TABLE IF NOT EXISTS sent_mails (
   address TEXT NOT NULL,
   topic TEXT NOT NULL,
   sent_at TEXT NOT NULL
@@ -38,21 +118,21 @@ CREATE TABLE IF NOT EXISTS sent_emails (
 
     def _create_address_index(self):
         sql = """\
-CREATE INDEX IF NOT EXISTS idx_address ON sent_emails (address)
+CREATE INDEX IF NOT EXISTS idx_address ON sent_mails (address)
         """
         with self.connection:
             self.connection.execute(sql)
 
     def _create_topic_index(self):
         sql = """\
-CREATE INDEX IF NOT EXISTS idx_topic ON sent_emails (topic)
+CREATE INDEX IF NOT EXISTS idx_topic ON sent_mails (topic)
         """
         with self.connection:
             self.connection.execute(sql)
 
     def _create_sent_at_index(self):
         sql = """\
-CREATE INDEX IF NOT EXISTS idx_sent_at ON sent_emails (sent_at)
+CREATE INDEX IF NOT EXISTS idx_sent_at ON sent_mails (sent_at)
         """
         with self.connection:
             self.connection.execute(sql)

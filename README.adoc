@@ -17,7 +17,7 @@ First construct a `SentMails` instance:
 
 [source,python]
 ----
-from mailed_before import SentMails
+from mailedbefore import SentMails
 
 sent_mails = SentMails(sqlite_file)
 ----
@@ -42,5 +42,17 @@ from datetime import datetime, timedelta
 # Remind the user about those books again after a week.
 datetimes = sent_mails.sent_at(email, topic)
 if len(datetimes) and datetime.now() - datetimes[-1] > timedelta(days=7):
+    ... # email the user
+----
+
+For convenience, there is also a method `last_sent_at` which returns the datetime when the last email was sent (or `None` if no email has been sent). So the previous code example can be rewritten as:
+
+[source,python]
+----
+from datetime import datetime, timedelta
+
+# Remind the user about those books again after a week.
+last_sent = sent_mails.last_sent_at(email, topic)
+if last_sent and datetime.now() - last_sent > timedelta(days=7):
     ... # email the user
 ----
