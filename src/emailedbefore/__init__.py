@@ -1,1 +1,1 @@
-from emailedbefore.sent_emails import SentEmails
+from .sent_emails import SentEmails as SentEmails
