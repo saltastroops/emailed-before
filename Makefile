@@ -60,3 +60,14 @@ tox: ## run tests on every Python version with tox
 
 coverage: ## check code coverage quickly with the default Python
 	pytest --cov=src --cov-report term-missing
+
+test-release: dist ## package and upload a release to the test PyPI
+	twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+
+release: dist ## package and upload a release
+	twine upload dist/*
+
+dist: clean ## builds source and wheel package
+	python setup.py sdist
+	python setup.py bdist_wheel
+	ls -l dist
