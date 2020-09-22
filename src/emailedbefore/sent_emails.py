@@ -1,7 +1,7 @@
 import os
 import sqlite3
 from datetime import datetime
-from typing import List, Optional, Union
+from typing import Any, List, Optional, Union
 
 
 class SentEmails:
@@ -18,7 +18,7 @@ class SentEmails:
 
     """
 
-    def __init__(self, sqlite_file: Union[str, os.PathLike]):
+    def __init__(self, sqlite_file: Union[str, "os.PathLike[Any]"]):
         self.connection = sqlite3.connect(
             sqlite_file, detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES
         )
@@ -27,7 +27,7 @@ class SentEmails:
         self._create_topic_index()
         self._create_sent_at_index()
 
-    def register(self, address: str, topic: str, sent_at: datetime):
+    def register(self, address: str, topic: str, sent_at: datetime) -> None:
         """
         Register the fact that a email about a topic has been sent to an address at a
         given datetime.
@@ -106,7 +106,7 @@ ORDER BY sent_at
             return None
         return sent_at[-1]
 
-    def _create_table(self):
+    def _create_table(self) -> None:
         sql = """\
 CREATE TABLE IF NOT EXISTS sent_emails (
   address TEXT NOT NULL,
@@ -118,21 +118,21 @@ CREATE TABLE IF NOT EXISTS sent_emails (
         with self.connection:
             self.connection.execute(sql)
 
-    def _create_address_index(self):
+    def _create_address_index(self) -> None:
         sql = """\
 CREATE INDEX IF NOT EXISTS idx_address ON sent_emails (address)
         """
         with self.connection:
             self.connection.execute(sql)
 
-    def _create_topic_index(self):
+    def _create_topic_index(self) -> None:
         sql = """\
 CREATE INDEX IF NOT EXISTS idx_topic ON sent_emails (topic)
         """
         with self.connection:
             self.connection.execute(sql)
 
-    def _create_sent_at_index(self):
+    def _create_sent_at_index(self) -> None:
         sql = """\
 CREATE INDEX IF NOT EXISTS idx_sent_at ON sent_emails (sent_at)
         """
