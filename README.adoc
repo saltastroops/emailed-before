@@ -19,7 +19,7 @@ First construct a `SentEmails` instance:
 ----
 from emailedbefore import SentEmails
 
-sent_mails = SentEmails(sqlite_file)
+sent_emails = SentEmails(sqlite_file)
 ----
 
 `sqlite_file` is the path to a Sqlite3 file. It will be created if it doesn't exist yet.
@@ -30,7 +30,7 @@ You can then register the fact that an email has been sent.
 ----
 email = "someone@example.com"
 topic = "Your library books are due"
-sent_mails.register(email, topic)
+sent_emails.register(email, topic)
 ----
 
 To find out when emails about a topic were sent you can use the `sent_at` method, which returns a list of datetimes. The list is ordered.
@@ -40,7 +40,7 @@ To find out when emails about a topic were sent you can use the `sent_at` method
 from datetime import datetime, timedelta
 
 # Remind the user about those books again after a week.
-datetimes = sent_mails.sent_at(email, topic)
+datetimes = sent_emails.sent_at(email, topic)
 if len(datetimes) and datetime.now() - datetimes[-1] > timedelta(days=7):
     ... # email the user
 ----
@@ -52,7 +52,7 @@ For convenience, there is also a method `last_sent_at` which returns the datetim
 from datetime import datetime, timedelta
 
 # Remind the user about those books again after a week.
-last_sent = sent_mails.last_sent_at(email, topic)
+last_sent = sent_emails.last_sent_at(email, topic)
 if last_sent and datetime.now() - last_sent > timedelta(days=7):
     ... # email the user
 ----
