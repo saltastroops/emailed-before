@@ -18,5 +18,5 @@ setup(
     install_requires=[
     ],
     tests_require=["mypy", "pytest", "pytest-cov", "pytest-runner"],
-    version="0.1.0",
+    version="0.2.0",
 )
